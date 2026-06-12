@@ -1,0 +1,95 @@
+import io.github.bonigarcia.wdm.WebDriverManager;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+import pageobject.HomePage;
+import pageobject.OrderPage;
+
+import java.util.Arrays;
+import java.util.Collection;
+
+@RunWith(Parameterized.class)
+public class OrderTest {
+
+    private WebDriver driver;
+    private HomePage homePage;
+    private OrderPage orderPage;
+
+    // параметры (оставлены как у вас)
+    private final String name;
+    private final String surname;
+    private final String address;
+    private final String metro;
+    private final String phone;
+    private final String date;
+    private final String rentalPeriod;
+    private final boolean selectColor;
+    private final String comment;
+    private final boolean useTopButton;
+
+    public OrderTest(String name, String surname, String address, String metro,
+                     String phone, String date, String rentalPeriod,
+                     boolean selectColor, String comment, boolean useTopButton) {
+        this.name = name;
+        this.surname = surname;
+        this.address = address;
+        this.metro = metro;
+        this.phone = phone;
+        this.date = date;
+        this.rentalPeriod = rentalPeriod;
+        this.selectColor = selectColor;
+        this.comment = comment;
+        this.useTopButton = useTopButton;
+    }
+
+    @Parameterized.Parameters(name = "Заказ {0} {1}, кнопка {9}")
+    public static Collection<Object[]> data() {
+        return Arrays.asList(new Object[][]{
+                {"Мария", "Котова", "г. Москва, ул. Красная", "Чистые пруды",
+                        "84444333221", "17", "сутки", true, "Очень нужен чёрный самокат!", true},
+                {"Мария", "Котова", "г. Москва, ул. Красная", "Чистые пруды",
+                        "84444333221", "17", "сутки", true, "Очень нужен чёрный самокат!", false},
+                {"Иван", "Петров", "г. Москва, ул. Ленина", "Сокольники",
+                        "89998887766", "29", "шестеро суток", false, "", true},
+                {"Иван", "Петров", "г. Москва, ул. Ленина", "Сокольники",
+                        "89998887766", "29", "шестеро суток", false, "", false}
+        });
+    }
+
+    @Before
+    public void setUp() {
+        WebDriverManager.chromedriver().setup();
+        driver = new ChromeDriver();
+        driver.manage().window().maximize();
+        homePage = new HomePage(driver);
+        orderPage = new OrderPage(driver);
+        driver.get("https://qa-scooter.praktikum-services.ru/");
+        homePage.acceptCookies(); // если хотите сразу принять куки
+    }
+
+    @After
+    public void tearDown() {
+        if (driver != null) {
+            driver.quit();
+        }
+    }
+
+    @Test
+    public void testOrderScooter() {
+        if (useTopButton) {
+            homePage.clickOrderButtonTop();
+        } else {
+            homePage.clickOrderButtonBottom();
+        }
+
+        orderPage.fillFirstForm(name, surname, address, metro, phone);
+        orderPage.fillSecondFormWithOptionalFields(date, rentalPeriod, selectColor, comment);
+        orderPage.confirmOrder();
+        Assert.assertTrue("Заказ должен быть оформлен успешно", orderPage.isOrderSuccessful());
+    }
+}
