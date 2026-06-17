@@ -14,63 +14,150 @@ public class OrderPage {
     private WebDriverWait wait;
 
     // ==================== ЭЛЕМЕНТЫ СТРАНИЦЫ ЗАКАЗА ====================
+
     // -------------------- Первый экран: "Для кого самокат" --------------------
+
     //Поле ввода "Имя"
     private final By nameInput = By.xpath("//input[@placeholder='* Имя']");
+
     //Поле ввода "Фамилия"
     private final By surnameInput = By.xpath("//input[@placeholder='* Фамилия']");
+
     //Поле ввода "Адрес: куда привезти заказ"
     private final By addressInput = By.xpath("//input[@placeholder='* Адрес: куда привезти заказ']");
+
     //Поле ввода "Станция метро"
     private final By metroInput = By.xpath("//input[@placeholder='* Станция метро']");
+
     //Поле ввода "Телефон"
     private final By phoneInput = By.xpath("//input[@placeholder='* Телефон: на него позвонит курьер']");
+
     //Кнопка "Далее"
     private final By nextButton = By.xpath("//button[text()='Далее']");
 
     // -------------------- Второй экран: "Про аренду" --------------------
+
     //Поле выбора даты "Когда привезти самокат"
     private final By dateInput = By.xpath("//input[@placeholder='* Когда привезти самокат']");
+
     //Выпадающий список "Срок аренды"
     private final By rentalPeriodDropdown = By.xpath("//div[@class='Dropdown-placeholder']");
+
     //Чек-бокс "чёрный цвет самоката"
     private final By colorCheckboxBlack = By.id("black");
+
     //Чек-бокс "серый цвет самоката"
     private final By colorCheckboxGrey = By.id("grey");
+
     //Поле ввода "Комментарий для курьера"
     private final By commentInput = By.xpath("//input[@placeholder='Комментарий для курьера']");
+
     //Кнопка "Заказать"
     private final By orderButton = By.xpath("//div[contains(@class, 'Order')]//button[text()='Заказать']");
 
     // -------------------- Модальные окна --------------------
+
     //Кнопка подтверждения "Да" в окне "Подтверждение заказа"
     private final By confirmYesButton = By.xpath("//button[text()='Да']");
+
     //Сообщение об успешном создании заказа "Заказ оформлен"
     private final By successMessage = By.xpath("//div[contains(@class, 'Order_ModalHeader') and contains(text(), 'Заказ оформлен')]");
 
+    // ==================== КОНСТРУКТОР ====================
 
     public OrderPage(WebDriver driver) {
         this.driver = driver;
         this.wait = new WebDriverWait(driver, Duration.ofSeconds(15));
     }
 
-    // ==================== МЕТОДЫ ДЛЯ РАБОТЫ С ФОРМАМИ ====================
+    // ==================== ШАГИ ПЕРВОЙ ФОРМЫ ("Для кого самокат") ====================
 
-    // Заполнение первой формы (Для кого самокат)
-    public void fillFirstForm(String name, String surname, String address, String metro, String phone) {
+    // Шаг 1: Ввод имени
+    public void enterName(String name) {
         wait.until(ExpectedConditions.visibilityOfElementLocated(nameInput)).sendKeys(name);
-        driver.findElement(surnameInput).sendKeys(surname);
-        driver.findElement(addressInput).sendKeys(address);
+    }
 
+    // Шаг 2: Ввод фамилии
+    public void enterSurname(String surname) {
+        driver.findElement(surnameInput).sendKeys(surname);
+    }
+
+    // Шаг 3: Ввод адреса
+    public void enterAddress(String address) {
+        driver.findElement(addressInput).sendKeys(address);
+    }
+
+    // Шаг 4: Выбор станции метро из выпадающего списка
+    public void selectMetroStation(String metro) {
         driver.findElement(metroInput).click();
         driver.findElement(metroInput).sendKeys(metro);
         WebElement metroOption = wait.until(ExpectedConditions.elementToBeClickable(
                 By.xpath("//div[@class='select-search__select']//div[contains(text(), '" + metro + "')]")
         ));
         metroOption.click();
+    }
 
+    // Шаг 5: Ввод телефона
+    public void enterPhone(String phone) {
         driver.findElement(phoneInput).sendKeys(phone);
+    }
+
+    // Шаг 6: Нажать кнопку "Далее" для перехода ко второму экрану
+    public void clickNextButton() {
         driver.findElement(nextButton).click();
+    }
+
+    // ==================== ШАГИ ВТОРОЙ ФОРМЫ ("Про аренду") ====================
+
+    // Шаг 1: Выбор даты доставки из календаря
+    public void selectDeliveryDate(String date) {
+        WebElement dateElement = driver.findElement(dateInput);
+        dateElement.click();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("//div[contains(@class, 'react-datepicker')]")
+        ));
+        WebElement day = wait.until(ExpectedConditions.elementToBeClickable(
+                By.xpath("//div[contains(@class, 'react-datepicker__day') and text()='" + date + "']")
+        ));
+        day.click();
+    }
+
+    // Шаг 2: Выбор срока аренды из выпадающего списка
+    public void selectRentalPeriod(String period) {
+        driver.findElement(rentalPeriodDropdown).click();
+        WebElement periodOption = wait.until(ExpectedConditions.elementToBeClickable(
+                By.xpath("//div[@class='Dropdown-option' and text()='" + period + "']")
+        ));
+        periodOption.click();
+    }
+
+    // Шаг 3: Выбор цвета самоката (чёрный жемчуг)
+    public void selectScooterColor() {
+        driver.findElement(colorCheckboxBlack).click();
+    }
+
+    // Шаг 4: Ввод комментария для курьера
+    public void enterComment(String comment) {
+        if (!comment.isEmpty()) {
+            driver.findElement(commentInput).sendKeys(comment);
+        }
+    }
+
+    // Шаг 5: Нажать кнопку "Заказать" на втором экране
+    public void clickOrderButton() {
+        driver.findElement(orderButton).click();
+    }
+
+    // ==================== СОБРАННЫЕ МЕТОДЫ ====================
+
+    // Заполнение первой формы (Для кого самокат)
+    public void fillFirstForm(String name, String surname, String address, String metro, String phone) {
+        enterName(name);
+        enterSurname(surname);
+        enterAddress(address);
+        selectMetroStation(metro);
+        enterPhone(phone);
+        clickNextButton();
     }
 
     // Заполнение второй формы (Про аренду)
@@ -79,30 +166,18 @@ public class OrderPage {
                 By.xpath("//div[contains(text(), 'Про аренду')]")
         ));
 
-        WebElement dateElement = driver.findElement(dateInput);
-        dateElement.click();
-
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[contains(@class, 'react-datepicker')]")));
-        WebElement day = wait.until(ExpectedConditions.elementToBeClickable(
-                By.xpath("//div[contains(@class, 'react-datepicker__day') and text()='" + date + "']")
-        ));
-        day.click();
-
-        driver.findElement(rentalPeriodDropdown).click();
-        WebElement periodOption = wait.until(ExpectedConditions.elementToBeClickable(
-                By.xpath("//div[@class='Dropdown-option' and text()='" + period + "']")
-        ));
-        periodOption.click();
+        selectDeliveryDate(date);
+        selectRentalPeriod(period);
 
         if (selectColor) {
-            driver.findElement(colorCheckboxBlack).click();
+            selectScooterColor();
         }
-        if (!comment.isEmpty()) {
-            driver.findElement(commentInput).sendKeys(comment);
-        }
+        enterComment(comment);
 
-        driver.findElement(orderButton).click();
+        clickOrderButton();
     }
+
+    // ==================== МОДАЛЬНЫЕ ОКНА ====================
 
     // Подтверждение заказа в модальном окне (кнопка «Да»)
     public void confirmOrder() {
